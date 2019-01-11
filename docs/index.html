@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Js版迷宫广度优先遍历demo</title>
+    <style type="text/css">
+        html, body {
+            padding: 0;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 19px;
+            font-weight: normal;
+            margin: 50px;
+            text-align: center;
+        }
+
+        button {
+            -webkit-appearance: none;
+            box-sizing: border-box;
+            padding: 7px 15px;
+            border: 1px solid #dcdfe6;
+            /*border-radius: 5px;*/
+            font-size: 16px;
+            color: #606266;
+            outline: none;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        button ~ button, input ~ input {
+            margin-left: 20px;
+        }
+
+        .container {
+            width: 960px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        input[type=number] {
+            -webkit-appearance: none;
+            background-color: #fff;
+            border-radius: 4px;
+            border: 1px solid #dcdfe6;
+            box-sizing: border-box;
+            color: #606266;
+            display: inline-block;
+            font-size: inherit;
+            height: 35px;
+            line-height: 35px;
+            outline: none;
+            padding: 0 15px;
+            transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+            width: 150px;
+            margin-bottom: 10px;
+        }
+
+        .maze-container {
+            text-align: center;
+            margin: 30px auto;
+        }
+
+        .maze {
+            margin: 0 auto;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        tr, td {
+            border: 1px solid gainsboro;
+        }
+
+        td {
+            padding: 5px 10px;
+        }
+
+        .cannot {
+            background: aliceblue;
+        }
+        .path {
+            background: aquamarine;
+        }
+    </style>
+</head>
+<body>
+<h1>
+    Js版迷宫广度优先遍历demo
+</h1>
+<div class="container">
+    <div class="operation">
+        <input type="number" value="5" placeholder="生成的行数" id="row">
+        <input type="number" value="6" placeholder="生成的列数" id="col">
+        <button onclick="createMazeMap()">create</button>
+        <button onclick="generateMap()">start</button>
+        <button onclick="clearMazeMap()">clear</button>
+    </div>
+    <div class="maze-container">
+        <table class="maze">
+
+        </table>
+        <table class="result">
+
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+    const con = document.querySelector('.maze');
+    const Maze = [],Steps = []
+
+    function createMazeMap() {
+        let row = document.getElementById('row').value,
+            col = document.getElementById('col').value
+        let html = ''
+        for (let i = 0; i < row; i++) {
+            html = html + '<tr>'
+            Maze[i] = []
+            Steps[i] = []
+            for (let j = 0; j < col; j++) {
+                let val = Math.round(Math.random())
+                Maze[i].push(val)
+                Steps[i].push(0)
+                html = html + `<td class="${val === 1 ? 'cannot' : 'can'}">${val}</td>`
+            }
+            html += '</tr>'
+        }
+        con.innerHTML = html
+    }
+
+    function clearMazeMap() {
+        con.innerHTML = ''
+        Maze.splice(0, Maze.length - 1)
+        Steps.splice(0, Steps.length - 1)
+        console.log(Maze)
+    }
+
+    const dirs = [
+        {i: -1, j: 0}, {i: 0, j: -1}, {i: 1, j: 0}, {i: 0, j: 1}
+    ]
+
+    function generateMap() {
+        let Q = [{i: 0, j: 0}]
+        while (Q.length > 0) {
+            let cur = Q.shift()
+            if (cur.i === Maze.length && cur.j === Maze[0].length) {
+                break
+            }
+
+            for(let k= 0;k<dirs.length;k++) {
+                let next = {
+                    i: cur.i + Number(dirs[k].i),
+                    j: cur.j + Number(dirs[k].j),
+                }
+                let val = at(next,Maze)
+                if( !val[1] || val[0] === 1) {
+                    continue
+                }
+                let val2 = at(next,Steps)
+                if( !val2[1] || val2[0] !== 0) {
+                    continue
+                }
+                if (next.i === 0 && next.j === 0) {
+                    continue
+                }
+
+                let curSteps = at(cur,Steps)[0]
+                Steps[next.i][next.j] = curSteps + 1
+                Q.push(next)
+            }
+        }
+        let html = ''
+        for (let i = 0; i < Steps.length; i++) {
+            html = html + '<tr>'
+            for (let j = 0; j < Steps[i].length; j++) {
+                html = html + `<td class="${Steps[i][j] >= 1 ? 'path' : ''}">${Steps[i][j]}</td>`
+            }
+            html += '</tr>'
+        }
+        document.querySelector('.result').innerHTML = html
+    }
+
+    function at(p,grid) {
+        if (p.i < 0 || p.i >= grid.length) {
+            return [0, false]
+        }
+        if (p.j < 0 || p.j >= grid[p.i].length){
+            return [0, false]
+        }
+        return [grid[p.i][p.j], true]
+    }
+</script>
+</body>
+</html>
